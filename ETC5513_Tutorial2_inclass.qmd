@@ -1,0 +1,111 @@
+---
+title: "ETC5513_Tutorial2_v2"
+author: "Waranya Ratirotjanakul"
+format: html
+editor: visual
+---
+
+# Reading Avian Influenza Data
+
+```{r}
+#| echo: true
+#| warning: false
+#| message: false
+
+library(tidyverse)
+dat <- read_csv("~/Monash_R/ETC5513_Workshop/ETC5513_WS2/WS2_data/avian_influenza_numbers.csv")
+```
+
+```{r Reading data}
+# return the first n number of row in dataset
+head(dat, 10) # display only 10 rows
+```
+
+```{r}
+# provides us a snapshot of the data 
+glimpse(dat) # get the information or dataset, e.g., 
+```
+
+```{r}
+# quick way for us to check the variable types
+str(dat)
+```
+
+# R inline command
+The data has `r ncol(dat)` variables and `r nrow(dat)` rows.
+
+`r (code)`
+
+### Why is it important to know the dimension of your dataset?
+To determine the complexity og your model, validate your result and for exploratory data analysis purposes.
+
+### What are the variable names in the dataset?
+There are 26 variables in total.
+
+```{r}
+names(dat)
+
+dat$Month
+dat$Australia
+```
+- **Australia:** The number of Inflienza count recorded in Australia for the particular month and year.
+- **Month:** The month and year that hte observation is recorded in mm/dd/yy format.
+
+# Exercise 4: Data Wrangling
+
+```{r}
+library(tidyverse)
+data_cleaned <- dat |>
+                  select(Month, Australia, Egypt, `United States`)
+```
+
+```{r}
+str(data_cleaned)
+```
+There are four variables which Month is in character, while the others are numeric.
+- **Month:** `r class(dat$Month)`
+- **Australia**
+- **Egypt**
+- **United States**
+
+Do you think the variable attributes are correct?
+- No, the month should be in date format.
+
+```{r}
+library(lubridate)
+data_cleaned <- dat |>
+                  select(Month, Australia, Egypt, `United States`) |>
+                  mutate(Month = mdy(Month)) |>
+                  filter(!is.na(Month))
+data_cleaned
+```
+
+```{r}
+library(kableExtra)
+data_cleaned |>
+  summarise(Australia = sum(Australia),
+            Egypt = sum(Egypt),
+            `United States` = sum(`United States`)) |>
+  kable(caption = "Summary of number of cases of Avian Influenza") |>
+  kable_styling()
+```
+
+```{r}
+library(ggplot2)
+data_cleaned |>
+  ggplot(aes(x = Egypt)) +
+  geom_histogram(binwidth = 5)
+
+data_cleaned |>
+  pivot_longer(-Month) |>
+  ggplot(aes(x = value, fill = name)) +
+  geom_histogram(binwidth = 5, position = 'dodge') +
+  facet_wrap(~name)
+
+data_cleaned |>
+  pivot_longer(-Month) |>
+  ggplot(aes(x = Month, y = value, fill = name)) +
+  geom_col()
+  facet_wrap(~name)
+```
+
